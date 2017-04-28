@@ -26,8 +26,8 @@ class Building {
   public:
     Building(int);
     int officeCount;
-    Office offices[];
-    int W[];
+    Office *offices;
+    int *W;
     void traverseHallways(vector<Path>);
     int getTotalEnergyForOffice(int);
 };
@@ -42,7 +42,9 @@ void Building::traverseHallways(vector<Path> nodes) {
     vector<Path> newNodes;
     for (Path path : nodes) {
         for (int o : offices[path.to].hallways) {
-            newNodes.push_back(Path(path.to, o));
+            if (o != path.from) {
+                newNodes.push_back(Path(path.to, o));
+            }
         }
     }
     nodes = newNodes;
@@ -52,14 +54,16 @@ void Building::traverseHallways(vector<Path> nodes) {
 int Building::getTotalEnergyForOffice(int j) {
     vector<Path> nodes;
     nodes.push_back(Path(0,j));
-    int nodesWithin[] = new int[officeCount];
     int energy = 0;
+    cout << endl << "Meeting in office " << j << ": " << endl;
     for (int i = 0; i < officeCount; i++) {
-        nodesWithin[i] = nodes.size();
-        energy += nodesWithin[i] * W[i];
+        cout << "Engineers travelling distance " << i << ": " << nodes.size() << endl;
+        energy += nodes.size() * W[i];
         traverseHallways(nodes);
+        if (nodes.size() == 0)
+            break;
     }
-
+    
     return energy;
 }
 
@@ -87,3 +91,5 @@ int main() {
     
     return 0;
 }
+
+
