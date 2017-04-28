@@ -1,4 +1,4 @@
-#include <cmath>
+nclude <cmath>
 #include <cstdio>
 #include <vector>
 #include <iostream>
@@ -6,7 +6,7 @@
 using namespace std;
 
 struct Path {
-  Public:
+  public:
     int from;
     int to;
     Path(int, int);
@@ -17,18 +17,19 @@ Path::Path(int a, int b) {
     to = b;
 }
 
+class Office {
+  public:
+    vector<int> hallways;
+};
+
 class Building {
-  Public:
+  public:
     Building(int);
-    officeCount;
+    int officeCount;
     Office offices[];
     int W[];
     void traverseHallways(vector<Path>);
-    void getTotalEnergyForOffice(int);
-}
-
-class Office {
-    vector<int> hallways;
+    int getTotalEnergyForOffice(int);
 };
 
 Building::Building(int n) {
@@ -45,15 +46,16 @@ void Building::traverseHallways(vector<Path> nodes) {
         }
     }
     nodes = newNodes;
+}
 
 
 int Building::getTotalEnergyForOffice(int j) {
     vector<Path> nodes;
-    nodes.push_back(office[j]);
+    nodes.push_back(Path(0,j));
     int nodesWithin[] = new int[officeCount];
     int energy = 0;
     for (int i = 0; i < officeCount; i++) {
-        nodesWithin[i] = nodes.length();
+        nodesWithin[i] = nodes.size();
         energy += nodesWithin[i] * W[i];
         traverseHallways(nodes);
     }
@@ -85,4 +87,3 @@ int main() {
     
     return 0;
 }
-
