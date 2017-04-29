@@ -1,4 +1,4 @@
-nclude <cmath>
+#include <cmath>
 #include <cstdio>
 #include <vector>
 #include <iostream>
@@ -28,7 +28,7 @@ class Building {
     int officeCount;
     Office *offices;
     int *W;
-    void traverseHallways(vector<Path>);
+    void traverseHallways(vector<Path> &nodes);
     int getTotalEnergyForOffice(int);
 };
 
@@ -38,7 +38,7 @@ Building::Building(int n) {
     W = new int[n];
 }
 
-void Building::traverseHallways(vector<Path> nodes) {
+void Building::traverseHallways(vector<Path> &nodes) {
     vector<Path> newNodes;
     for (Path path : nodes) {
         for (int o : offices[path.to].hallways) {
@@ -55,9 +55,9 @@ int Building::getTotalEnergyForOffice(int j) {
     vector<Path> nodes;
     nodes.push_back(Path(0,j));
     int energy = 0;
-    cout << endl << "Meeting in office " << j << ": " << endl;
+    //cout << endl << "Meeting in office " << j << ": " << endl;
     for (int i = 0; i < officeCount; i++) {
-        cout << "Engineers travelling distance " << i << ": " << nodes.size() << endl;
+        //cout << "Engineers travelling distance " << i << ": " << nodes.size() << endl;
         energy += nodes.size() * W[i];
         traverseHallways(nodes);
         if (nodes.size() == 0)
