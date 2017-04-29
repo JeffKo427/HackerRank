@@ -3,16 +3,20 @@
 using namespace std;
 int streak;
 
-int getStreak(vector<int> a, int i, bool increasing) {
+void getStreak(vector<int> a, int i, bool increasing) {
+    //cout << streak << " ";
+    if (i >= a.size() - 1) {
+        return;
+    }
     if (increasing) {
         if (a[i+1] > a[i]) {
             streak++;
-            getStreak(a,i,true);
+            getStreak(a,i+1,true);
         }
     } else {
         if (a[i+1] < a[i]) {
             streak++;
-            getStreak(a,i,false);
+            getStreak(a,i+1,false);
         }
     }
 }
@@ -24,14 +28,17 @@ int minimumDeletions(vector < int > a){
     // Complete this function
     int minDel = 0;
     bool increasing;
-    for (int i = 0; i < a.size(); i++) {
+    for (int i = 0; i < a.size() - 1; i++) {
+        //cout << "i=" << i << ": ";
         streak = 1;
         if (a[i+1] > a[i]) {
             getStreak(a,i,true);
         } else {
             getStreak(a,i,false);
         }
-        minDel += streak;
+        i += streak - 2;
+        //cout << endl;
+        minDel += streak - 2;
     }
     return minDel;
 }
