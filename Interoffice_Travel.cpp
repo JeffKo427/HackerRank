@@ -5,21 +5,13 @@
 #include <algorithm>
 using namespace std;
 
-struct Path {
-  public:
-    int from;
-    int to;
-    Path(int, int);
-};
-
-Path::Path(int a, int b) {
-    from = a;
-    to = b;
-}
-
 class Office {
   public:
-    vector<int> hallways;
+    vector<int> children;
+    int parent;
+    int nDescendants;
+    int *descendantsByLevel;
+    
 };
 
 class Building {
@@ -28,8 +20,10 @@ class Building {
     int officeCount;
     Office *offices;
     int *W;
-    void traverseHallways(vector<Path> &nodes);
     int getTotalEnergyForOffice(int);
+    void getNodesWithin(int j, int &nodesWithin);
+    void populateDescendants(int);
+    void defineAndSolveForRoot(int);
 };
 
 Building::Building(int n) {
@@ -38,33 +32,60 @@ Building::Building(int n) {
     W = new int[n];
 }
 
-void Building::traverseHallways(vector<Path> &nodes) {
-    vector<Path> newNodes;
-    for (Path path : nodes) {
-        for (int o : offices[path.to].hallways) {
-            if (o != path.from) {
-                newNodes.push_back(Path(path.to, o));
-            }
-        }
-    }
-    nodes = newNodes;
-}
-
 
 int Building::getTotalEnergyForOffice(int j) {
-    vector<Path> nodes;
-    nodes.push_back(Path(0,j));
     int energy = 0;
-    //cout << endl << "Meeting in office " << j << ": " << endl;
+    int *nodesWithin = new int[officeCount];
+    getNodesWithin(j, nodesWithin);
     for (int i = 0; i < officeCount; i++) {
-        //cout << "Engineers travelling distance " << i << ": " << nodes.size() << endl;
-        energy += nodes.size() * W[i];
-        traverseHallways(nodes);
-        if (nodes.size() == 0)
-            break;
+        energy += nodesWithin[i] * W[i];
     }
     
     return energy;
+}
+
+void Building::getNodesWithin(int j, int &nodesWithin) {
+    if (offices[j].parent == 0) {
+        nodesWithin = offices[j].nDescendants;
+    } else {
+        getNodesWithin(offices[j].parent, nodesWithin);
+        for (int i = 1; i < offices[j].nDescendants; i++) {
+            nodesWithin[i] = nodesWithin[i] - offices[j].descendantsByLevel[i-1];
+        }
+        for (int i = 1; i < offices[j].nDescendants; i++) {
+            nodesWithin[i] = nodesWithin[i-1] + offices[j].descendantsByLevel[i]
+        }
+    }
+}
+
+void Building::populateDescendants(int o) {
+    offices[o].nDescendants = max_element(offices[o].children.begin(), offices[o].children.end()) + 1;
+    offices[o].descendantsByLevel = new int[offices[o].nDescendants + 1];
+    offices[o].descendantsByLevel[0] = 1;
+    offices[o].descendantsByLevel[1] = offices[o].children.size();
+    if (offices[o].nDescendants > 1) {
+        for (int c : children) {
+            for (int i = 1; i < offices[c].nDescendants; i++) {
+                offices[o].descendantsByLevel[i] += offices[c].descendantsByLevel[i-1];
+            }
+        }
+    }
+}
+
+void Building::defineAndSolveForRoot(int o, int p) {
+    // Erase the parent from the children and set it as the parent.
+    if (p)
+        offices[o].children.erase(std::remove(vec.begin(), vec.end(), p), vec.end());
+    offices[o].parent = p;
+    // Recursively determine nDescendants.
+    if (offices[o].children.size()) {
+        for (int c : offices[o].children) {
+            defineAndSolveForRoot(c, o);
+        }
+        populateDescendants(o);
+    } else {
+        offices[o].nDescendants = 0;
+    }   
 }
 
 int main() {
@@ -80,16 +101,17 @@ int main() {
     int u,v;
     for (int i = 0; i < n-1; i++) {
         cin >> u >> v;
-        building.offices[u].hallways.push_back(v);
-        building.offices[v].hallways.push_back(u);
+        building.offices[u].children.push_back(v);
+        building.offices[v].children.push_back(u);
     }
 
     // Print the energy expended to meet in each office.
+    building.offices[0].parent = 0;
+    building.defineAndSolveForRoot(0);
     for (int j = 1; j <= n; j++) {
         cout << building.getTotalEnergyForOffice(j) << " ";
     }
     
     return 0;
 }
-
 
