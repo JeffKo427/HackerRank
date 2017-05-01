@@ -44,37 +44,52 @@ void clearChessboard(bool **chessboard, int n) {
     }
 }
 
+bool notOutOfBounds(int x, int y, int n) {
+    return x > 0 && y > 0 && y < n-1 && x < n-1;
+}
+
 Node *graphMoves(Node *root, int a, int b, bool **chessboard, int n) {
     // add all non-repeat moves to tree
     bool movesAdded = false;
     // always eight possible moves: +a+b, +a-b, -a+b, -a-b where a in x b in y and same where a in y b in x
     int moves[4][2] = {{1,1},{1,-1},{-1,1},{-1,-1}};
     int newPos[2];
+    Node* node = root;
+    if (node->children.size()) {
+        for (Node* child : node->children) {
+            node = graphMoves(child, a, b, chessboard, n);
+        }
+    }
+        
     for (int *move : moves) {
         newPos[0] = root->m + a * move[0];
         newPos[1] = root->n + b * move[1];
-        if (!chessboard[newPos[0]][newPos[1]]) {
+        if (notOutOfBounds(newPos[0],newPos[1],n) && !chessboard[newPos[0]][newPos[1]]) {
             movesAdded = true;
             Node *temp = new Node(newPos[0], newPos[1]);
             temp->parent = root;
-            if (newPos[0] == n && newPos[1] == n) {
+            root->children.push_back(temp);
+            if (newPos[0] == n-1 && newPos[1] == n-1) {
                 return temp;
             }
         }
         newPos[0] = root->m + b * move[0];
         newPos[1] = root->n + a * move[1];
-        if (!chessboard[newPos[0]][newPos[1]]) {
+        if (notOutOfBounds(newPos[0],newPos[1],n) && !chessboard[newPos[0]][newPos[1]]) {
             movesAdded = true;
             Node *temp = new Node(newPos[0], newPos[1]);
             temp->parent = root;
-            if (newPos[0] == n && newPos[1] == n) {
+            root->children.push_back(temp);
+            if (newPos[0] == n-1 && newPos[1] == n-1) {
                 return temp;
             }
         }
     }
     
-    if (movesAdded)
-        graphMoves();
+    if (movesAdded) {
+        node = graphMoves(root, a, b, chessboard, n);
+    }
+    return node;
 }
 
 int getDepth(Node *leaf, Node *root, int depth) {
@@ -91,10 +106,13 @@ int main(){
     int n;
     cin >> n;
     // your code goes here
-    bool **chessboard = new bool*[n][n];
+    bool **chessboard = new bool*[n];
+    for(int i = 0; i < n; ++i) {
+        chessboard[i] = new bool[n];
+    }
     Node *solution;
     for (int a = 1; a < n; a++) {
-        for (int b = a; b < n; b++) {
+        for (int b = 1; b < n; b++) {
             clearChessboard(chessboard, n);
             Node *root = new Node(0,0);
             chessboard[0][0] = true;
