@@ -55,7 +55,7 @@ Node *graphMoves(Node *root, int a, int b, bool **chessboard, int n) {
     int moves[4][2] = {{1,1},{1,-1},{-1,1},{-1,-1}};
     int newPos[2];
     Node* node = root;
-    if (node->children.size()) {
+    if (root->children.size()) {
         for (Node* child : node->children) {
             node = graphMoves(child, a, b, chessboard, n);
         }
@@ -66,6 +66,7 @@ Node *graphMoves(Node *root, int a, int b, bool **chessboard, int n) {
         newPos[1] = root->n + b * move[1];
         if (notOutOfBounds(newPos[0],newPos[1],n) && !chessboard[newPos[0]][newPos[1]]) {
             movesAdded = true;
+            cout << newPos[0] << " " << newPos[1] << endl;
             Node *temp = new Node(newPos[0], newPos[1]);
             temp->parent = root;
             root->children.push_back(temp);
